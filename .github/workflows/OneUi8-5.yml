@@ -177,15 +177,31 @@ jobs:
       run: |
         source scripts/zip_creation.sh
         FLASHABLE_ZIP_CREATION
+   
+    #- name: Upload ROM to Hugging Face
+    #  env:
+       # HF_TOKEN: ${{ secrets.HF_TOKEN }}
+       # HF_XET_HIGH_PERFORMANCE: "1"
+     # run: |
+       # DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+        #continue-on-error: hf buckets sync ./template hf://buckets/Zears14/lumifiles/out/$DATE/ --include "*.zip"
 
-    - name: Upload ROM to Hugging Face
-      env:
-        HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        HF_XET_HIGH_PERFORMANCE: "1"
+    - name: Upload to Gofile
       run: |
-        DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-        hf buckets sync ./template hf://buckets/Zears14/lumifiles/out/$DATE/ --include "*.zip"
-
+          # Busca el archivo zip de la ROM
+          ROM_ZIP=$(find out/target/product/a22/ -name "*.zip" | head -n 1)
+          if [ -z "$ROM_ZIP" ]; then
+            echo "No se encontró ningún archivo ZIP para subir."
+            exit 1
+          fi
+          echo "Subiendo $ROM_ZIP a Gofile..."
+          # Sube a Gofile y extrae el enlace de descarga
+          RESPONSE=$(curl -F "file=@$ROM_ZIP" https://gofile.io)
+          DOWNLOAD_LINK=$(echo $RESPONSE | jq -r '.data.downloadPage')
+          echo "--------------------------------------------------"
+          echo "DESCARGA TU ROM AQUÍ: $DOWNLOAD_LINK"
+          echo "--------------------------------------------------"
+          
     - name: Cleanup
       run: |
         sudo rm -rf *
