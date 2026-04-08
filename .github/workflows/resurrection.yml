@@ -1,0 +1,30 @@
+name: Rescatar ROM Existente
+on: workflow_dispatch
+
+jobs:
+  rescue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Buscar y Subir ROM
+        run: |
+          echo "Buscando archivos de la ROM anterior..."
+          # Buscamos archivos de más de 800MB para asegurar que es la ROM
+          ROM_PATH=$(find /home/runner/work/ -name "*.zip" -size +800M | head -n 1)
+
+          if [ -z "$ROM_PATH" ]; then
+            echo "No se encontró ningún archivo grande. Intentando búsqueda general..."
+            find /home/runner/work/ -name "*.zip"
+            exit 1
+          fi
+
+          echo "¡ROM encontrada en: $ROM_PATH"
+          echo "Subiendo a Gofile..."
+          
+          # Obtener servidor libre y subir
+          SERVER=$(curl -s https://gofile.io | jq -r '.data.server')
+          RESPONSE=$(curl -F "file=@$ROM_PATH" https://${SERVER}.gofile.io/uploadFile)
+          LINK=$(echo $RESPONSE | jq -r '.data.downloadPage')
+          
+          echo "--------------------------------------------------"
+          echo "TU ROM ESTÁ AQUÍ: $LINK"
+          echo "--------------------------------------------------"
