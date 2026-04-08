@@ -188,19 +188,25 @@ jobs:
 
     - name: Upload to Gofile
       run: |
-          # Busca el archivo zip de la ROM
-          ROM_ZIP=$(find out/target/product/a22/ -name "*.zip" | head -n 1)
+          # Buscamos el archivo .zip ignorando carpetas innecesarias para ir rápido
+          ROM_ZIP=$(find $(pwd) -name "*.zip" ! -path "*/.*" | grep -iE "a22|Lumirom" | head -n 1)
+
           if [ -z "$ROM_ZIP" ]; then
-            echo "No se encontró ningún archivo ZIP para subir."
+            echo "Error: No se encontró el archivo ZIP. Listando archivos para depurar:"
+            find . -maxdepth 5 -name "*.zip"
             exit 1
           fi
-          echo "Subiendo $ROM_ZIP a Gofile..."
-          # Sube a Gofile y extrae el enlace de descarga
+
+          echo "Archivo encontrado en: $ROM_ZIP"
+          echo "Subiendo a Gofile..."
+          
+          # Subida y extracción del link
           RESPONSE=$(curl -F "file=@$ROM_ZIP" https://gofile.io)
           DOWNLOAD_LINK=$(echo $RESPONSE | jq -r '.data.downloadPage')
-          echo "--------------------------------------------------"
+          
+          echo "=================================================="
           echo "DESCARGA TU ROM AQUÍ: $DOWNLOAD_LINK"
-          echo "--------------------------------------------------"
+          echo "=================================================="
 
           - name: Guardar como Artefacto de GitHub
             uses: actions/upload-artifact@v4
