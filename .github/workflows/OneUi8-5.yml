@@ -201,7 +201,9 @@ jobs:
           echo "--------------------------------------------------"
           echo "DESCARGA TU ROM AQUÍ: $DOWNLOAD_LINK"
           echo "--------------------------------------------------"
-          
-    - name: Cleanup
-      run: |
-        sudo rm -rf *
+
+          - name: Guardar como Artefacto de GitHub
+            uses: actions/upload-artifact@v4
+            with:
+          name: Lumirom-A22
+          path: "**/*.zip" # Esto buscará cualquier zip y lo guardará
